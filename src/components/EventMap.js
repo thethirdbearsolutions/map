@@ -35,6 +35,9 @@ export default function(store, opts){
       filters() {
         return store.state.filters;
       },
+      unpinned() {
+        return store.state.unpinned;
+      },
       filteredEvents() {
         return store.getters.filteredEvents;
       },
@@ -112,6 +115,7 @@ export default function(store, opts){
 
       setMapPositionBasedOnFilters() {
         if (!this.mapRef) return;
+        if (this.unpinned) return;
 
         const zipcodeCoordinates = this.zipcodes[this.filters.zipcode];
 
@@ -232,6 +236,13 @@ export default function(store, opts){
         });
       },
 
+      mapChanged(e) {
+        const zoom = Math.round(e.target.getZoom())
+        if (!this.unpinned && this.filters.zipcode && zoom < 8) {
+          store.dispatch('unpin')
+        }
+      },
+      
       mapMounted() {
         this.$refs.map.className = this.$refs.map.className.replace('-loading', '');
 
@@ -253,6 +264,7 @@ export default function(store, opts){
         this.openPopupsOnClick();
 
         this.plotEvents();
+        store.dispatch('mapMounted')
       }
     },
 
@@ -266,6 +278,7 @@ export default function(store, opts){
 
       this.mapRef.addControl(new mapboxgl.NavigationControl());
       this.mapRef.on("load", this.mapMounted);
+      this.mapRef.on("zoomend", this.mapChanged);
     }
   })
 }

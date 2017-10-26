@@ -4,11 +4,6 @@ import xhr from 'xhr';
 import { computeFilteredEvents } from 'src/util/events';
 import querystring from 'querystring';
 
-//Save the initial hash of the window when Vue initializes.
-//We'll use these values to populate the initial store filter values
-const initialHash = querystring.parse(window.location.hash.replace(/^#/, '') ||
-                                      window.location.search.replace(/^\?/, ''))
-
 //A small Vuex plugin that will update the browsers location querystring whenever
 //the setFilters mutation occurs
 const hashUpdaterPlugin = (store) => {
@@ -32,7 +27,9 @@ const store = new Vuex.Store({
     zipcodes: {},
     us_states: {},
     view: 'list',
-    filters: initialHash,
+    filters: {},
+    initialFilters: {},
+    unpinned: true,
     selectedEventIds: [],
     // We initialize eventTypes just with our "virtual" event type,
     // and the rest are loaded from the server
@@ -69,6 +66,16 @@ const store = new Vuex.Store({
       }, (err, response) => {
         if (err) return;
         commit('us_statesReceived', response.body);
+      });
+    },
+    mapMounted({ commit }) {
+      process.nextTick(() => {
+        commit('mapMounted');
+      });
+    },
+    unpin({ commit }) {
+      process.nextTick(() => {
+        commit('unpin');
       });
     },
     setFilters({ commit }, filters) {
@@ -114,7 +121,16 @@ const store = new Vuex.Store({
     viewToggled(state) {
       state.view = state.view === 'map' ? 'list' : 'map';
     },
+    mapMounted(state) {
+      state.unpinned = false;
+      state.filters = state.initialFilters;
+    },
+    unpin(state) {
+      state.unpinned = true
+      Vue.delete(state.filters, 'zipcode')
+    },
     filtersReceived(state, filters) {
+      state.unpinned = false;
       state.filters = {...state.filters, ...filters};
     },
     eventSelected(state, eventIds) {

@@ -1,6 +1,7 @@
 import 'styles/index';
 import 'babel-polyfill';
 import 'modernizr';
+import querystring from 'querystring';
 
 import store from 'src/store.js';
 import campaignOptions from 'src/campaigns.js';
@@ -9,6 +10,12 @@ import Header from 'components/Header';
 import Footer from 'components/Footer';
 import EventMap from 'components/EventMap';
 import EventList from 'components/EventList';
+
+//Save the initial hash of the window when Vue initializes.
+//We'll use these values to populate the initial store filter values
+const initialHash = querystring.parse(
+  window.location.hash.replace(/^#/, '') ||
+    window.location.search.replace(/^\?/, ''))
 
 let options = campaignOptions();
 
@@ -28,7 +35,9 @@ store.dispatch('loadUSStates')
 
 // Set initial event filters based on campaign
 if (Object.keys(options.filters).length) {
-  store.state.filters = options.filters;
+  store.state.initialFilters = options.filters
+} else {
+  store.state.initialFilters = initialHash
 }
 
 // Initialize Vue instances with the store.
