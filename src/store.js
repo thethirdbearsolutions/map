@@ -46,7 +46,7 @@ const store = new Vuex.Store({
     loadEvents({commit}){
       xhr({
         method: 'GET',
-        url: '//d3r5pbxngwkvri.cloudfront.net/action_events_v2.json',
+        url: 'https://d1lojfn0ru84zx.cloudfront.net/gErSDATIREALCIblebonrYETErusco.json',
         json: true,
       }, (err, response) => {
         if (err) return;
